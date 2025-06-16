@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "target": "ESNext", // Define o alvo de compilação
+    "module": "ESNext", // Usa módulos ES
+    "strict": true, // Ativa verificações estritas
+    "esModuleInterop": true, // Permite importação de módulos CommonJS
+    "skipLibCheck": true, // Ignora checagem de tipos em arquivos de definição
+    "forceConsistentCasingInFileNames": true, // Força consistência em nomes de arquivos
+    "baseUrl": ".", // Base para os paths
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "src",
+    ".next/types/**/*.ts"
+  ], // Inclui a pasta src
+  "exclude": [
+    "node_modules",
+    "dist"
+  ] // Exclui node_modules e dist
+}
