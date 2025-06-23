@@ -11,13 +11,18 @@ import { Hono } from "hono";
 
 const app = new Hono();
 
+export const transactionTypes = ['expense', 'income'] as const;
+
+export type TransactionType = typeof transactionTypes[number];
+
+
 app.get("/", async (c) => {
   const type = await c.req.query("type");
 
   let queries = [];
 
   if (type) {
-    queries.push(eq(transactionTable.type, type));
+    queries.push(eq(transactionTable.type, type as TransactionType));
   }
 
   const transactions = await db
