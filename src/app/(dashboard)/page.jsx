@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, use } from "react";
 import {
   Card,
   CardContent,
@@ -26,28 +26,108 @@ export default function HomePage() {
   const { currentFilter } = useDateFilter();
   const [activeFilter, setActiveFilter] = useState(currentFilter);
 
-  // Filtrar transações baseado no filtro ativo
-  const filteredTransactions = useMemo(() => {
-    return filterTransactionsByDate(
-      mockTransactions,
+  const [wallets, setWallets] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [chartData, setChartData] = useState(null);
+
+  useEffect(() => {
+    const getWallets = async () => {
+      const res = await fetch("/api/wallets");
+
+      const { wallets: newWallets } = await res.json();
+
+      console.log("Wallets: ", newWallets);
+
+      setWallets(newWallets);
+    };
+
+    const transactionData = async () => {
+      const res = await fetch("/api/transactions");
+
+      console.log("Chegou aqui ");
+
+      const { transactions } = await res.json();
+
+      // Atualizar mockTransactions com os dados reais
+      setFilteredTransactions(
+        filterTransactionsByDate(
+          transactions,
+          activeFilter.startDate,
+          activeFilter.endDate
+        )
+      );
+
+      const chartData = generateChartData(
+        transactions,
+        activeFilter.startDate,
+        activeFilter.endDate
+      );
+
+      console.log(chartData);
+
+      setChartData(chartData);
+      setTransactions(transactions);
+    };
+
+    getWallets();
+    transactionData();
+  }, []);
+
+  useEffect(() => {
+    console.log("Filter change", activeFilter);
+    const newFilteredTransactions = filterTransactionsByDate(
+      transactions,
       activeFilter.startDate,
       activeFilter.endDate
     );
-  }, [activeFilter]);
 
-  // Calcular estatísticas
+    const chartData = generateChartData(
+      transactions,
+      activeFilter.startDate,
+      activeFilter.endDate
+    );
+
+    console.log(chartData);
+
+    setChartData(chartData);
+
+    setFilteredTransactions(newFilteredTransactions);
+  }, [activeFilter, transactions]);
+
   const stats = useMemo(() => {
     return calculateStats(filteredTransactions);
   }, [filteredTransactions]);
 
+  // const filteredTransactions = useMemo(() => {
+  //   return filterTransactionsByDate(
+  //     transactions,
+  //     activeFilter.startDate,
+  //     activeFilter.endDate
+  //   );
+  // }, [activeFilter]);
+
+  // Calcular estatísticas
+
+  // useEffect(() => {
+  //   const chartData = generateChartData(
+  //     transactions,
+  //     activeFilter.startDate,
+  //     activeFilter.endDate
+  //   );
+
+  //   console.log(chartData);
+
+  //   setChartData(chartData);
+  // }, [activeFilter]);
   // Gerar dados para gráficos
-  const chartData = useMemo(() => {
-    return generateChartData(
-      mockTransactions,
-      activeFilter.startDate,
-      activeFilter.endDate
-    );
-  }, [activeFilter]);
+  // const chartData = useMemo(() => {
+  //   return generateChartData(
+  //     transactions,
+  //     activeFilter.startDate,
+  //     activeFilter.endDate
+  //   );
+  // }, [activeFilter]);
 
   const handleFilterChange = (filter) => {
     setActiveFilter(filter);
@@ -155,7 +235,7 @@ export default function HomePage() {
         </Card>
       </div>
       {/* Seção de Carteiras */}
-      <WalletsSection />
+      <WalletsSection wallets={wallets} />
       {/* Gráficos funcionais */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4 rounded-2xl border-slate-200">
@@ -166,7 +246,7 @@ export default function HomePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <CashFlowChart data={chartData.dailyData} />
+            {chartData && <CashFlowChart data={chartData.dailyData} />}
           </CardContent>
         </Card>
 
@@ -180,7 +260,9 @@ export default function HomePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <CategoryChart data={chartData.categoryData} />
+            {chartData?.categoryData && (
+              <CategoryChart data={chartData.categoryData} />
+            )}
           </CardContent>
         </Card>
       </div>

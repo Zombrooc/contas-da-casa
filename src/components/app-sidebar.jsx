@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 const navigationItems = [
   {
     title: "Overview",
-    url: "",
+    url: "/",
     icon: Home,
   },
   {

@@ -214,9 +214,9 @@ export function filterTransactionsByDate(transactions, startDate, endDate) {
 
 // Função para calcular estatísticas
 export function calculateStats(transactions) {
-  const income = transactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0)
+  const income = transactions.filter((t) => t.type === "income").reduce((sum, t) => sum + Number(t.amount), 0)
 
-  const expenses = transactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount, 0)
+  const expenses = transactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + Number(t.amount), 0)
 
   const balance = income - expenses
 
@@ -225,8 +225,10 @@ export function calculateStats(transactions) {
 
 // Função para agrupar transações por categoria
 export function groupTransactionsByCategory(transactions) {
+
+  console.log('Transactions function: ', transactions);
   const groups = transactions.reduce((acc, transaction) => {
-    const category = transaction.category
+    const category = transaction.categoryName
     if (!acc[category]) {
       acc[category] = {
         category,
@@ -235,7 +237,7 @@ export function groupTransactionsByCategory(transactions) {
         transactions: [],
       }
     }
-    acc[category].total += transaction.amount
+    acc[category].total += Number(transaction.amount)
     acc[category].count += 1
     acc[category].transactions.push(transaction)
     return acc
@@ -246,6 +248,8 @@ export function groupTransactionsByCategory(transactions) {
 
 // Dados para gráficos
 export function generateChartData(transactions, startDate, endDate) {
+
+
   const filteredTransactions = filterTransactionsByDate(transactions, startDate, endDate)
 
   // Dados para gráfico de linha (fluxo de caixa)
@@ -256,9 +260,9 @@ export function generateChartData(transactions, startDate, endDate) {
     const dateStr = format(currentDate, "yyyy-MM-dd")
     const dayTransactions = filteredTransactions.filter((t) => t.date === dateStr)
 
-    const income = dayTransactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0)
+    const income = dayTransactions.filter((t) => t.type === "income").reduce((sum, t) => sum + Number(t.amount), 0)
 
-    const expenses = dayTransactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount, 0)
+    const expenses = dayTransactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + Number(t.amount), 0)
 
     dailyData.push({
       date: format(currentDate, "dd/MM"),
@@ -271,12 +275,17 @@ export function generateChartData(transactions, startDate, endDate) {
   }
 
   // Dados para gráfico de pizza (categorias)
-  const categoryData = groupTransactionsByCategory(filteredTransactions.filter((t) => t.type === "expense")).map((group) => ({
-    name: group.category,
-    value: group.total,
-    fill: getCategoryColor(group.category),
-  }))
+  const categoryData = groupTransactionsByCategory(filteredTransactions.filter((t) => t.type === "expense")).map((group) => {
+    console.log(group)
 
+    return {
+      name: group.categoryName,
+      value: group.total,
+      fill: getCategoryColor(group.categoryName),
+    }
+  })
+
+  console.log('categoryData: ', categoryData);
   return { dailyData, categoryData }
 }
 
