@@ -9,6 +9,10 @@ import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 
+export const categoryTypes = ['expense', 'income'] as const;
+
+export type CategoryType = typeof categoryTypes[number];
+
 const app = new Hono();
 
 app.get("/", async (c) => {
@@ -17,7 +21,7 @@ app.get("/", async (c) => {
   let queries = [];
 
   if (type) {
-    queries.push(eq(categoriesTable.type, type));
+    queries.push(eq(categoriesTable.type, type as CategoryType ));
   }
 
   const categories = await db
