@@ -49,6 +49,8 @@ export default function HomePage() {
 
       const { transactions } = await res.json();
 
+      console.log("Transactions aqui: ", transactions);
+
       // Atualizar mockTransactions com os dados reais
       setFilteredTransactions(
         filterTransactionsByDate(

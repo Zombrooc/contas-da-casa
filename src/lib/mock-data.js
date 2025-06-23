@@ -228,18 +228,18 @@ export function groupTransactionsByCategory(transactions) {
 
   console.log('Transactions function: ', transactions);
   const groups = transactions.reduce((acc, transaction) => {
-    const category = transaction.categoryName
-    if (!acc[category]) {
-      acc[category] = {
-        category,
+    const categoryName = transaction.categoryName
+    if (!acc[categoryName]) {
+      acc[categoryName] = {
+        categoryName,
         total: 0,
         count: 0,
         transactions: [],
       }
     }
-    acc[category].total += Number(transaction.amount)
-    acc[category].count += 1
-    acc[category].transactions.push(transaction)
+    acc[categoryName].total += Number(transaction.amount)
+    acc[categoryName].count += 1
+    acc[categoryName].transactions.push(transaction)
     return acc
   }, {})
 
@@ -276,10 +276,10 @@ export function generateChartData(transactions, startDate, endDate) {
 
   // Dados para gráfico de pizza (categorias)
   const categoryData = groupTransactionsByCategory(filteredTransactions.filter((t) => t.type === "expense")).map((group) => {
-    console.log(group)
+    console.log('Group: ', group)
 
     return {
-      name: group.categoryName,
+      name: group?.categoryName,
       value: group.total,
       fill: getCategoryColor(group.categoryName),
     }
