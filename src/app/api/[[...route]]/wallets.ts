@@ -1,6 +1,6 @@
 // wallets.ts
 import { walletInserSchema, wallets as walletTable } from "@/db/schema";
-import { db } from "@/lib/drizzle";
+import db from "@/lib/drizzle";
 import { zValidator } from "@hono/zod-validator";
 import { eq, sql } from "drizzle-orm";
 import { Hono } from "hono";

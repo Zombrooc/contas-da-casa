@@ -4,17 +4,16 @@ import {
   transactionsInsertSchema,
   categories as categoriesTable,
 } from "@/db/schema";
-import { db } from "@/lib/drizzle";
+import db from "@/lib/drizzle";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 
 const app = new Hono();
 
-export const transactionTypes = ['expense', 'income'] as const;
+export const transactionTypes = ["expense", "income"] as const;
 
-export type TransactionType = typeof transactionTypes[number];
-
+export type TransactionType = (typeof transactionTypes)[number];
 
 app.get("/", async (c) => {
   const type = await c.req.query("type");

@@ -9,7 +9,9 @@ if (!connectionString) {
 
 const sql = neon(connectionString);
 
-export const db = drizzle(sql);
+const db = drizzle(sql);
+
+export { db as default };
 
 // =======================================
 
@@ -18,12 +20,3 @@ export const db = drizzle(sql);
 // const db = drizzle(process.env.DATABASE_URL!);
 
 // export { db as default };
-
-// src/db.ts
-// import { drizzle } from "drizzle-orm/node-postgres";
-
-// import { config } from "dotenv";
-
-// config({ path: ".env" }); // or .env.local
-
-// export const db = drizzle(process.env.DATABASE_URL!);
