@@ -20,14 +20,24 @@ import {
 } from "@/lib/mock-data";
 import { useDateFilter, type DateFilter } from "@/hooks/use-date-filter";
 
+type Expense = {
+  id: string;
+  description: string;
+  category: string;
+  amount: number;
+  date: string;
+  wallet?: string;
+  paymentMethod?: string;
+};
+
 export default function ExpensesPage() {
   const { currentFilter } = useDateFilter();
   const [activeFilter, setActiveFilter] = useState<DateFilter>(currentFilter);
   const [searchTerm, setSearchTerm] = useState("");
-  const [expenses, setExpenses] = useState([]);
-  const [filteredExpenses, setFilteredExpenses] = useState([]);
-  const [expensesByCategory, setExpensesByCategory] = useState([]);
-  const [chartData, setChartData] = useState([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
+  const [expensesByCategory, setExpensesByCategory] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
 
   // Filtrar apenas despesas
   useEffect(() => {
@@ -59,7 +69,7 @@ export default function ExpensesPage() {
 
     if (searchTerm) {
       filtered = filtered.filter(
-        (expense) =>
+        (expense: Expense) =>
           expense.description
             .toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
