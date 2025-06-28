@@ -128,7 +128,7 @@ export default function ExpensesPage() {
 
         <div className="flex gap-2">
           <DateFilterComponent onFilterChange={handleFilterChange} />
-          <Button className="rounded-xl bg-red-600 hover:bg-red-700">
+          <Button className="rounded-xl">
             <Plus className="h-4 w-4 mr-2" />
             Nova despesa
           </Button>
