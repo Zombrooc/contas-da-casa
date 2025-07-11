@@ -4,7 +4,7 @@ import { handle } from "hono/vercel";
 import wallets from "./wallets";
 import transactions from "./transactions";
 import categories from "./categories";
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 const app = new Hono().basePath("/api");
 

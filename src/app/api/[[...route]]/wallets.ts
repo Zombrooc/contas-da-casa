@@ -1,5 +1,10 @@
 // wallets.ts
-import { walletInserSchema, wallets as walletTable } from "@/db/schema";
+import {
+  transactions as transactionTable,
+  transactionsInsertSchema,
+  walletInserSchema,
+  wallets as walletTable,
+} from "@/db/schema";
 import db from "@/lib/drizzle";
 import { zValidator } from "@hono/zod-validator";
 import { eq, sql } from "drizzle-orm";
@@ -14,16 +19,8 @@ app.get("/", async (c) => {
 });
 
 app.post("/", zValidator("json", walletInserSchema), async (c) => {
-  const {
-    name,
-    userId,
-    type,
-    bank,
-    accountNumber,
-    balance,
-    creditLimit,
-    description,
-  } = await c.req.valid("json");
+  const { name, type, bank, accountNumber, balance, creditLimit, description } =
+    await c.req.valid("json");
 
   console.log("Creating wallet with data:", {
     name,
@@ -33,33 +30,36 @@ app.post("/", zValidator("json", walletInserSchema), async (c) => {
     balance,
     creditLimit,
     description,
-    userId,
   });
 
-  const newWallet = await db
-    .insert(walletTable)
-    .values({
-      name,
-      type,
-      userId,
-      bank,
-      description,
-      accountNumber,
-      creditLimit,
-    })
-    .returning();
+  try {
+    const newWallet = await db
+      .insert(walletTable)
+      .values({
+        name,
+        type,
+        bank,
+        description,
+        accountNumber,
+        creditLimit,
+        balance,
+      })
+      .returning();
 
-  return c.json({
-    message: "create wallet",
-    body: newWallet,
-  });
+    return c.json({
+      message: "create wallet",
+      body: newWallet,
+    });
+  } catch (err) {
+    return c.json({ message: "Error creating wallet", error: err }, 500);
+  }
 });
 
 app.post("/:walletId/add-balance", async (c) => {
   const walletId = await c.req.param("walletId");
-  const { amount } = await c.req.json();
+  const { amount }: { amount: number } = await c.req.json();
 
-  if (!amount || isNaN(amount)) {
+  if (!amount) {
     return c.json({ message: "Invalid amount" }, 400);
   }
 
@@ -67,8 +67,6 @@ app.post("/:walletId/add-balance", async (c) => {
     .select()
     .from(walletTable)
     .where(eq(walletTable.id, walletId));
-
-  console.log(wallet[0].balance + amount);
 
   if (wallet.length === 0) {
     return c.json({ message: "Wallet not found" }, 404);
@@ -79,6 +77,27 @@ app.post("/:walletId/add-balance", async (c) => {
     .set({ balance: sql`${walletTable.balance} + ${amount}` })
     .where(eq(walletTable.id, walletId))
     .returning();
+
+  const today: Date = new Date();
+  const yyyy: number = today.getFullYear();
+  let mm: number | string = today.getMonth() + 1; // Months start at 0!
+  let dd: number | string = today.getDate();
+
+  if (dd < 10) dd = "0" + dd;
+  if (mm < 10) mm = "0" + mm;
+
+  const formattedToday = dd + "/" + mm + "/" + yyyy;
+
+  const transaction: typeof transactionTable.$inferInsert = {
+    walletId,
+    amount: amount.toString(),
+    description: `Balance added: ${amount}`,
+    date: formattedToday,
+    isRecurring: false,
+    type: "income",
+  };
+
+  await db.insert(transactionTable).values(transaction).returning();
 
   return c.json({
     message: "Balance updated",

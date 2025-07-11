@@ -27,7 +27,6 @@ app.get("/", async (c) => {
   const transactions = await db
     .select({
       id: transactionTable.id,
-      userId: transactionTable.userId,
       walletId: transactionTable.walletId,
       categoryId: transactionTable.categoryId,
       type: transactionTable.type,
@@ -57,7 +56,6 @@ app.get("/", async (c) => {
 
 app.post("/", zValidator("json", transactionsInsertSchema), async (c) => {
   const {
-    userId,
     walletId,
     categoryId,
     amount,
@@ -70,7 +68,6 @@ app.post("/", zValidator("json", transactionsInsertSchema), async (c) => {
   } = await c.req.valid("json");
 
   console.log("Creating transaction with data:", {
-    userId,
     walletId,
     categoryId,
     amount,
@@ -85,7 +82,6 @@ app.post("/", zValidator("json", transactionsInsertSchema), async (c) => {
   const newTransaction = await db
     .insert(transactionTable)
     .values({
-      userId,
       walletId,
       categoryId,
       amount,

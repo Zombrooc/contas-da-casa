@@ -40,24 +40,21 @@ export const frequencyEnum = pgEnum("frequency", [
 ]);
 
 // Users table
-export const users = pgTable("users", {
-  id: text()
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+// export const users = pgTable("users", {
+//   id: text()
+//     .primaryKey()
+//     .$defaultFn(() => createId()),
+//   name: text("name").notNull(),
+//   email: text("email").notNull().unique(),
+//   createdAt: timestamp("created_at").defaultNow(),
+//   updatedAt: timestamp("updated_at").defaultNow(),
+// });
 
 // Wallets table
 export const wallets = pgTable("wallets", {
   id: text()
     .primaryKey()
     .$defaultFn(() => createId()),
-  userId: text("user_id")
-    .references(() => users.id)
-    .notNull(),
   name: text("name").notNull(),
   type: walletTypeEnum("type").notNull(),
   bank: text("bank"),
@@ -89,20 +86,17 @@ export const categories = pgTable("categories", {
 export const categoriesInsertSchema = createInsertSchema(categories);
 
 // Transactions table
-export const transactions
- = pgTable("transactions", {
+export const transactions = pgTable("transactions", {
   id: text()
     .primaryKey()
     .$defaultFn(() => createId()),
-  userId: text("user_id")
-    .references(() => users.id)
-    .notNull(),
+  // userId: text("user_id")
+  //   .references(() => users.id)
+  //   .notNull(),
   walletId: text("wallet_id")
     .references(() => wallets.id)
     .notNull(),
-  categoryId: text("category_id")
-    .references(() => categories.id)
-    .notNull(),
+  categoryId: text("category_id").references(() => categories.id),
   type: transactionTypeEnum("type").notNull(),
   description: text("description").notNull(),
   amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
@@ -125,9 +119,9 @@ export const investments = pgTable("investments", {
   id: text()
     .primaryKey()
     .$defaultFn(() => createId()),
-  userId: text("user_id")
-    .references(() => users.id)
-    .notNull(),
+  // userId: text("user_id")
+  //   .references(() => users.id)
+  //   .notNull(),
   type: investmentTypeEnum("type").notNull(),
   ticker: text("ticker"),
   name: text("name"),
@@ -172,9 +166,9 @@ export const budgets = pgTable("budgets", {
   id: text()
     .primaryKey()
     .$defaultFn(() => createId()),
-  userId: text("user_id")
-    .references(() => users.id)
-    .notNull(),
+  // userId: text("user_id")
+  //   .references(() => users.id)
+  //   .notNull(),
   categoryId: text("category_id")
     .references(() => categories.id)
     .notNull(),
@@ -193,9 +187,9 @@ export const goals = pgTable("goals", {
   id: text()
     .primaryKey()
     .$defaultFn(() => createId()),
-  userId: text("user_id")
-    .references(() => users.id)
-    .notNull(),
+  // userId: text("user_id")
+  //   .references(() => users.id)
+  //   .notNull(),
   name: text("name").notNull(),
   description: text("description"),
   targetAmount: decimal("target_amount", { precision: 12, scale: 2 }).notNull(),
