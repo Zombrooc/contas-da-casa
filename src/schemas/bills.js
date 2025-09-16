@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RECURRING_INTERVAL } from "../../prisma/generated/prisma";
+import { RECURRING_INTERVAL } from "../../generated/prisma";
 import { CATEGORIES } from "@/lib/getCategory";
 
 const createBillSchema = z.object({
