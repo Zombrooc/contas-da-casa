@@ -1,12 +1,13 @@
 import CreateNewBillInstanceForm from "@/components/bills/createNewBillnstanceForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { prisma } from "@/lib/prisma";
-// import { RECURRING_INTERVAL } from "../../../../../generated/prisma";
+import { getUrl } from "@/lib/getUrl";
 
 export default async function CreateBillInstancePage() {
-  const bills = await prisma.recurringBills.findMany({
-    where: { isActive: true },
-  });
+  const billsResponse = await fetch(getUrl('/api/bills'));
+
+  const { data } = await billsResponse.json()
+
+  const { bills } = data
 
   return (
     <div className="flex flex-1 flex-col ">
@@ -18,7 +19,7 @@ export default async function CreateBillInstancePage() {
                 <CardTitle className="text-foreground">Criar conta</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <CreateNewBillInstanceForm bills={bills} />
+                {bills.length > 0 ? <CreateNewBillInstanceForm bills={bills} /> : "Nenhuma conta criada"}
               </CardContent>
             </Card>
           </div>

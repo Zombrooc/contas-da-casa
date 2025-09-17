@@ -38,7 +38,11 @@ async function CreateTransactionDrawer() {
               Cafés da manhã, presentes, pagamentos recebidos e outros.
             </DrawerDescription>
           </DrawerHeader>
-          <CreateNewTransactionForm wallets={wallets} />
+          {wallets.length > 0 ? (
+            <CreateNewTransactionForm wallets={wallets} />
+          ) : (
+            "Nenhuma carteira criada para poder criar novas transações"
+          )}
         </div>
       </DrawerContent>
     </Drawer>

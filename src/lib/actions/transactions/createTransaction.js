@@ -1,7 +1,9 @@
+'use server'
+
 import { prisma } from "@/lib/prisma";
 import { format } from 'date-fns'
 
-import { CATEGORIES } from '@/lib/getCategory'
+import { CATEGORIES } from '@/lib/ENUMS'
 
 const createTransaction = async ({
   walletId,

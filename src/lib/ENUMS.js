@@ -29,6 +29,13 @@ export const CATEGORIES = [
   { key: "OTHER_EXPENSE", value: "Outras Despesas", type: "EXPENSE" },
 ];
 
+export const RECURRING_INTERVAL = [
+  { key: "DAILY", value: "Diário" },
+  { key: "WEEKLY", value: "Semanal" },
+  { key: "MONTHLY", value: "Mensal" },
+  { key: "YEARLY", value: "Anual" }
+]
+
 export const getCategory = (key) => {
   const category = CATEGORIES.find((item) => item.key === key);
   return category ? category.value : null;

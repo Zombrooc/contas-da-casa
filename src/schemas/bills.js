@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { RECURRING_INTERVAL } from "../../generated/prisma";
-import { CATEGORIES } from "@/lib/getCategory";
+import { CATEGORIES, RECURRING_INTERVAL } from "@/lib/ENUMS";
 
 const createBillSchema = z.object({
   name: z
@@ -18,7 +17,8 @@ const createBillSchema = z.object({
     invalid_type_error: "O valor da conta deve ser um número.",
   }),
   recurringInterval: z
-    .enum(Object.values(RECURRING_INTERVAL), {
+    .enum(Object.keys(RECURRING_INTERVAL)
+      .map((key) => RECURRING_INTERVAL[key].key), {
       required_error: "O intervalo de recorrência é obrigatório.",
     })
     .optional(),

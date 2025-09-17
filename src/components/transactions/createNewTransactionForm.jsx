@@ -22,20 +22,8 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { createBillSchema } from "@/schemas/bills";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CATEGORIES } from "@/lib/getCategory";
+import { CATEGORIES } from "@/lib/ENUMS";
 import { createTransactionSchema } from "@/schemas/transactions";
-
-import { DrawerClose, DrawerFooter } from "@/components/ui/drawer";
 
 export default function CreateNewTransactionForm({ wallets }) {
   const router = useRouter();

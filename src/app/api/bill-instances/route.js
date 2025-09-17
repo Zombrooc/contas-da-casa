@@ -3,6 +3,17 @@ import { createBillInstanceSchema } from "@/schemas/bills";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
+async function GET(req) {
+  const billInstances = await prisma.billInstances.findMany({});
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      billInstances: billInstances || []
+    }
+  })
+}
+
 async function POST(req) {
   const body = await req.json();
 
@@ -57,4 +68,4 @@ async function POST(req) {
   });
 }
 
-export { POST };
+export { GET, POST };

@@ -24,11 +24,11 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { CATEGORIES } from "@/lib/getCategory";
+import { CATEGORIES } from "@/lib/ENUMS";
 
 export default function AddBalanceForm({ walletId }) {
   const router = useRouter();
-  // 1. Define your form.
+
   const form = useForm({
     resolver: zodResolver(addWalletBalanceSchema),
     defaultValues: {
@@ -37,10 +37,7 @@ export default function AddBalanceForm({ walletId }) {
     },
   });
 
-  // 2. Define a submit handler.
   async function onSubmit({ amount, category }) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     const res = await fetch(`/api/wallets/${walletId}/add-balance`, {
       method: "POST",
       body: JSON.stringify({
@@ -53,6 +50,7 @@ export default function AddBalanceForm({ walletId }) {
 
     if (!success) {
       alert("Algo deu errado");
+      form.reset();
       return;
     }
 
@@ -86,7 +84,7 @@ export default function AddBalanceForm({ walletId }) {
                           <SelectItem value={category.key} key={category.key}>
                             {category.value}
                           </SelectItem>
-                        ),
+                        )
                       )}
                     </SelectContent>
                   </Select>

@@ -6,9 +6,9 @@ export default async function WalletPage() {
     next: { tags: ["wallets"] },
   });
 
-  const { data } = await response.json();
+  const { success, data } = await response.json();
 
-  const { success, wallets } = data;
+  const { wallets } = data;
 
   return (
     <div className="flex flex-1 flex-col ">
@@ -16,7 +16,11 @@ export default async function WalletPage() {
         <div className="flex flex-col gap-4 p-4 pt-0 md:gap-6 md:py-4">
           <h1>Lista de Carteiras</h1>
           <ul>
-            <WalletList wallets={wallets} />
+            {success ? (
+              <WalletList wallets={wallets} />
+            ) : (
+              <h1> Nenhum carteira criada até o momento</h1>
+            )}
           </ul>
         </div>
       </div>

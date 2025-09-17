@@ -1,4 +1,4 @@
-import { CATEGORIES } from "@/lib/getCategory";
+import { CATEGORIES } from "@/lib/ENUMS";
 import { z } from "zod";
 
 const createTransactionSchema = z.object({

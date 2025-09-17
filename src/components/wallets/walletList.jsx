@@ -1,15 +1,4 @@
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import AddBalanceForm from "@/components/wallets/addBalanceForm";
 import Link from "next/link";
 
 export function WalletList({ wallets }) {

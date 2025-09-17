@@ -32,11 +32,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CATEGORIES } from "@/lib/getCategory";
+import { CATEGORIES, RECURRING_INTERVAL } from "@/lib/ENUMS";
 
-export default function CreateNewBillForm({ defaultRecurringInterval }) {
+export default function CreateNewBillForm() {
   const router = useRouter();
-  // 1. Define your form.
+
   const form = useForm({
     resolver: zodResolver(createBillSchema),
     defaultValues: {
@@ -49,10 +49,7 @@ export default function CreateNewBillForm({ defaultRecurringInterval }) {
     },
   });
 
-  // 2. Define a submit handler.
   async function onSubmit(data) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     const res = await fetch(`/api/bills/`, {
       method: "POST",
       body: JSON.stringify(data),
@@ -82,9 +79,6 @@ export default function CreateNewBillForm({ defaultRecurringInterval }) {
                   <FormControl>
                     <Input placeholder="CEMIG" {...field} />
                   </FormControl>
-                  {/* <FormDescription>
-                    This is your public display name.
-                  </FormDescription>*/}
                   <FormMessage />
                 </FormItem>
               )}
@@ -105,9 +99,9 @@ export default function CreateNewBillForm({ defaultRecurringInterval }) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {defaultRecurringInterval.map((interval) => (
-                        <SelectItem key={interval.value} value={interval.value}>
-                          {interval.label}
+                      {RECURRING_INTERVAL.map((interval) => (
+                        <SelectItem key={interval.key} value={interval.key}>
+                          {interval.value}
                         </SelectItem>
                       ))}
                     </SelectContent>

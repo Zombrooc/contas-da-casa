@@ -1,26 +1,25 @@
 import { PayInstanceButton } from "@/components/bills/payButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { WalletList } from "@/components/wallets/walletList";
 import { getUrl } from "@/lib/getUrl";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Link from "next/link";
-import { Fragment } from "react";
 
-export default async function WalletPage() {
-  const billResponse = await fetch(`${getUrl("/api/bills")}`, {
-    next: { tags: ["bills"] },
-  });
+export default async function InstacesPage() {
 
-  const walletResponse = await fetch(`${getUrl("/api/wallets")}`, {
-    next: { tags: ["wallets"] },
-  });
+  const [billResponse, walletResponse] = await Promise.all([
+    fetch(`${getUrl("/api/bills")}`, {
+      next: { tags: ["bills"] },
+    }),
+    fetch(`${getUrl("/api/wallets")}`, {
+      next: { tags: ["wallets"] },
+    })
+  ])
 
   const { data: billsData } = await billResponse.json();
   const { data: walletData } = await walletResponse.json();
 
-  console.log("Bills: ", billsData);
   const { bills } = billsData;
   const { wallets } = walletData;
 

@@ -4,7 +4,6 @@ import { SectionCards } from "@/components/section-cards";
 import { Badge } from "@/components/ui/badge";
 import { ptBR } from "date-fns/locale";
 
-// import data from "./data.json";
 import {
   Card,
   CardContent,
@@ -15,16 +14,18 @@ import {
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { format } from "date-fns";
 import { getUrl } from "@/lib/getUrl";
-import { CATEGORIES } from "@/lib/getCategory";
+import { CATEGORIES } from "@/lib/ENUMS";
 
 export default async function Page() {
   const transactionsResponse = await fetch(`${getUrl("/api/transactions")}`);
 
-  const { data } = await transactionsResponse.json();
+  const { success, data } = await transactionsResponse.json();
 
   const { transactions } = data;
 
-  console.log("Transactions: ", transactions);
+  if (!success || data) {
+    return <h1> Loading... </h1>;
+  }
 
   return (
     <div className="flex flex-1 flex-col ">
@@ -72,7 +73,7 @@ export default async function Page() {
                             <>
                               {CATEGORIES.find(
                                 (category) =>
-                                  category.key === transaction.category,
+                                  category.key === transaction.category
                               )?.value || "S/C"}
                             </>
                           </Badge>
@@ -81,7 +82,7 @@ export default async function Page() {
                           <span>{`${format(
                             new Date(transaction.createdAt),
                             "iiii '-' dd 'de' MMMM 'de' yyyy",
-                            { locale: ptBR },
+                            { locale: ptBR }
                           )}`}</span>
                           <span>•</span>
                           <span>{transaction.wallet.name}</span>

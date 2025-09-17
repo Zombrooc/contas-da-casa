@@ -32,7 +32,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-import { CATEGORIES } from "@/lib/getCategory";
+import { CATEGORIES } from "@/lib/ENUMS";
 import { format } from "date-fns";
 
 export default function TransactionPageClient({ transactions }) {

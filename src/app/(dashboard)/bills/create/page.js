@@ -1,15 +1,8 @@
 import CreateNewBillForm from "@/components/bills/createNewBillForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RECURRING_INTERVAL } from "../../../../../generated/prisma";
 
-export default async function CreateBillPage() {
-  let defaultRecurringInterval = Object.values(RECURRING_INTERVAL);
+export default function CreateBillPage() {
 
-  defaultRecurringInterval = defaultRecurringInterval.map((interval) => ({
-    value: interval,
-    label:
-      interval.charAt(0) + interval.slice(1).toLowerCase().replaceAll("_", " "),
-  }));
   return (
     <div className="flex flex-1 flex-col ">
       <div className="@container/main flex flex-1 flex-col gap-2">
@@ -20,9 +13,7 @@ export default async function CreateBillPage() {
                 <CardTitle className="text-foreground">Criar conta</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <CreateNewBillForm
-                  defaultRecurringInterval={defaultRecurringInterval}
-                />
+                <CreateNewBillForm />
               </CardContent>
             </Card>
           </div>
