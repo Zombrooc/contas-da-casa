@@ -6,15 +6,11 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Link from "next/link";
 
-export default async function InstacesPage() {
+async function fetchData() {
 
   const [billResponse, walletResponse] = await Promise.all([
-    fetch(`${getUrl("/api/bills")}`, {
-      next: { tags: ["bills"] },
-    }),
-    fetch(`${getUrl("/api/wallets")}`, {
-      next: { tags: ["wallets"] },
-    })
+    fetch(`${getUrl("/api/bills")}`, { cache: 'no-store' }),
+    fetch(`${getUrl("/api/wallets")}`, { cache: 'no-store' })
   ])
 
   const { data: billsData } = await billResponse.json();
@@ -22,6 +18,13 @@ export default async function InstacesPage() {
 
   const { bills } = billsData;
   const { wallets } = walletData;
+
+  return { bills: bills || [], wallets: wallets || [] }
+}
+
+export default async function InstacesPage() {
+
+  const { bills, wallets } = await fetchData();
 
   return (
     <div className="flex flex-1 flex-col ">

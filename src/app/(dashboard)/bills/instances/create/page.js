@@ -2,12 +2,20 @@ import CreateNewBillInstanceForm from "@/components/bills/createNewBillnstanceFo
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUrl } from "@/lib/getUrl";
 
-export default async function CreateBillInstancePage() {
-  const billsResponse = await fetch(getUrl('/api/bills'));
+async function fetchData() {
+  const billsResponse = await fetch(getUrl('/api/bills'), { cache: 'no-store' });
 
   const { data } = await billsResponse.json()
 
   const { bills } = data
+
+  return { bills: bills || [] }
+}
+
+export default async function CreateBillInstancePage() {
+
+
+  const { bills } = await fetchData();
 
   return (
     <div className="flex flex-1 flex-col ">

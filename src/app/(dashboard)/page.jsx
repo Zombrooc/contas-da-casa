@@ -16,22 +16,36 @@ import { format } from "date-fns";
 import { getUrl } from "@/lib/getUrl";
 import { CATEGORIES } from "@/lib/ENUMS";
 
-export default async function Page() {
-  const transactionsResponse = await fetch(`${getUrl("/api/transactions")}`);
+async function fetchData() {
+  const [statsResponse, transactionResponse] = await Promise.all([
+    fetch(`${getUrl(`/api/stats`)}`, { cache: 'no-store' }),
+    fetch(`${getUrl("/api/transactions")}`, { cache: 'no-store' }),
+  ]);
 
-  const { success, data } = await transactionsResponse.json();
+  const { data: statsData } = await statsResponse.json();
+  const { data: transactionsData } = await transactionResponse.json();
 
-  const { transactions } = data;
+  const { balance, incomeBalance, expenseBalance } = statsData;
+  const { transactions } = transactionsData;
 
-  if (!success || data) {
-    return <h1> Loading... </h1>;
-  }
+  return {
+    stats: {
+      balance,
+      incomeBalance,
+      expenseBalance,
+    },
+    transactions,
+  };
+}
+
+export default async function HomePage() {
+  const { stats, transactions } = await fetchData();
 
   return (
     <div className="flex flex-1 flex-col ">
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-          <SectionCards />
+          <SectionCards stats={stats} />
           <div className="px-4 lg:px-6">
             <ChartAreaInteractive />
           </div>

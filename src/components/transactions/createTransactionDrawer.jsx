@@ -16,7 +16,9 @@ import { getUrl } from "@/lib/getUrl";
 import CreateNewTransactionForm from "./createNewTransactionForm";
 
 async function CreateTransactionDrawer() {
-  const walletResponse = await fetch(`${getUrl("/api/wallets")}`);
+  const walletResponse = await fetch(`${getUrl("/api/wallets")}`, {
+    cache: 'no-store'
+  });
 
   const { data } = await walletResponse.json();
 
