@@ -9,15 +9,13 @@ async function GET(req) {
   return NextResponse.json({
     success: true,
     data: {
-      billInstances: billInstances || []
-    }
-  })
+      billInstances: billInstances || [],
+    },
+  });
 }
 
 async function POST(req) {
   const body = await req.json();
-
-  console.log("Body: ", body);
 
   const validatedFields = createBillInstanceSchema.safeParse(body);
 

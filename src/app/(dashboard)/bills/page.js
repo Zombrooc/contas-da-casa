@@ -7,11 +7,20 @@ import { ptBR } from "date-fns/locale";
 import Link from "next/link";
 
 async function fetchData() {
-
   const [billResponse, walletResponse] = await Promise.all([
-    fetch(`${getUrl("/api/bills")}`, { cache: 'no-store' }),
-    fetch(`${getUrl("/api/wallets")}`, { cache: 'no-store' })
-  ])
+    fetch(`${getUrl("/api/bills")}`, {
+      next: {
+        tags: ["bills"],
+        revalidate: 60,
+      },
+    }),
+    fetch(`${getUrl("/api/wallets")}`, {
+      next: {
+        tags: ["wallets", "balance"],
+        revalidate: 60,
+      },
+    }),
+  ]);
 
   const { data: billsData } = await billResponse.json();
   const { data: walletData } = await walletResponse.json();
@@ -19,11 +28,10 @@ async function fetchData() {
   const { bills } = billsData;
   const { wallets } = walletData;
 
-  return { bills: bills || [], wallets: wallets || [] }
+  return { bills: bills || [], wallets: wallets || [] };
 }
 
 export default async function InstacesPage() {
-
   const { bills, wallets } = await fetchData();
 
   return (

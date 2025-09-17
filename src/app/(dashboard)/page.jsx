@@ -18,8 +18,18 @@ import { CATEGORIES } from "@/lib/ENUMS";
 
 async function fetchData() {
   const [statsResponse, transactionResponse] = await Promise.all([
-    fetch(`${getUrl(`/api/stats`)}`, { cache: 'no-store' }),
-    fetch(`${getUrl("/api/transactions")}`, { cache: 'no-store' }),
+    fetch(`${getUrl(`/api/stats`)}`, {
+      next: {
+        tags: ["stats", "balance", "transactions"],
+        revalidate: 60,
+      },
+    }),
+    fetch(`${getUrl("/api/transactions")}`, {
+      next: {
+        tags: ["transactions", "balance", "stats"],
+        revalidate: 60,
+      },
+    }),
   ]);
 
   const { data: statsData } = await statsResponse.json();
@@ -42,89 +52,84 @@ export default async function HomePage() {
   const { stats, transactions } = await fetchData();
 
   return (
-    <div className="flex flex-1 flex-col ">
-      <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-          <SectionCards stats={stats} />
-          <div className="px-4 lg:px-6">
-            <ChartAreaInteractive />
-          </div>
-          <div className="px-4 lg:px-6">
-            <Card className="rounded-xl">
-              <CardHeader>
-                <CardTitle className="text-foreground">
-                  Lista de Transações
-                </CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  {transactions.length} transações encontradas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {transactions.map((transaction) => (
+    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <SectionCards stats={stats} />
+      <div className="px-4 lg:px-6">
+        <ChartAreaInteractive />
+      </div>
+      <div className="px-4 lg:px-6">
+        <Card className="rounded-xl">
+          <CardHeader>
+            <CardTitle className="text-foreground">
+              Lista de Transações
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              {transactions.length} transações encontradas
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {transactions.map((transaction) => (
+              <div
+                key={transaction.id}
+                className="flex items-center justify-between p-4 rounded-lg  hover:cursor-pointer group"
+              >
+                <div className="flex items-center gap-4">
                   <div
-                    key={transaction.id}
-                    className="flex items-center justify-between p-4 rounded-lg  hover:cursor-pointer group"
+                    className={`p-3 rounded-lg ${
+                      transaction.type === "INCOME"
+                        ? "bg-green-500/10"
+                        : "bg-red-500/10"
+                    }`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`p-3 rounded-lg ${
-                          transaction.type === "INCOME"
-                            ? "bg-green-500/10"
-                            : "bg-red-500/10"
-                        }`}
-                      >
-                        {transaction.type === "INCOME" ? (
-                          <ArrowUpRight className="h-5 w-5 text-green-600 dark:text-green-400" />
-                        ) : (
-                          <ArrowDownRight className="h-5 w-5 text-red-600 dark:text-red-400" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          {/* <p className=" text-foreground">{transaction.description}</p> */}
-                          <Badge variant="secondary" className="">
-                            {/* {transaction.category}*/}
-                            <>
-                              {CATEGORIES.find(
-                                (category) =>
-                                  category.key === transaction.category
-                              )?.value || "S/C"}
-                            </>
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-4  text-muted-foreground">
-                          <span>{`${format(
-                            new Date(transaction.createdAt),
-                            "iiii '-' dd 'de' MMMM 'de' yyyy",
-                            { locale: ptBR }
-                          )}`}</span>
-                          <span>•</span>
-                          <span>{transaction.wallet.name}</span>
-                        </div>
-                      </div>
+                    {transaction.type === "INCOME" ? (
+                      <ArrowUpRight className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    ) : (
+                      <ArrowDownRight className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant="secondary" className="">
+                        <>
+                          {CATEGORIES.find(
+                            (category) => category.key === transaction.category,
+                          )?.value || "S/C"}
+                        </>
+                      </Badge>
                     </div>
-                    <div className="text-right">
-                      <div
-                        className={` ${
-                          transaction.type === "INCOME"
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-red-600 dark:text-red-400"
-                        }`}
-                      >
-                        {transaction.type === "INCOME" ? "+" : ""}R${" "}
-                        {(transaction.amount / 100).toLocaleString("pt-BR", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </div>
-                      <p className=" text-muted-foreground">
-                        {transaction.type === "INCOME" ? "Receita" : "Despesa"}
-                      </p>
+                    <div className="flex items-center gap-4  text-muted-foreground">
+                      <span>{`${format(
+                        new Date(transaction.createdAt),
+                        "iiii '-' dd 'de' MMMM 'de' yyyy",
+                        { locale: ptBR },
+                      )}`}</span>
+                      <span>•</span>
+                      <span>{transaction.wallet.name}</span>
                     </div>
                   </div>
-                ))}
+                </div>
+                <div className="text-right">
+                  <div
+                    className={` ${
+                      transaction.type === "INCOME"
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400"
+                    }`}
+                  >
+                    {transaction.type === "INCOME" ? "+" : ""}R${" "}
+                    {(transaction.amount / 100).toLocaleString("pt-BR", {
+                      minimumFractionDigits: 2,
+                    })}
+                  </div>
+                  <p className=" text-muted-foreground">
+                    {transaction.type === "INCOME" ? "Receita" : "Despesa"}
+                  </p>
+                </div>
+              </div>
+            ))}
 
-                {/* Pagination */}
-                {/* {totalPages > 1 && (
+            {/* Pagination */}
+            {/* {totalPages > 1 && (
                 <div className="flex items-center justify-between pt-4 border-t ">
                   <p className=" text-muted-foreground">
                     Página {currentPage} de {totalPages}
@@ -155,9 +160,9 @@ export default async function HomePage() {
                   </div>
                 </div>
               )} */}
-              </CardContent>
-            </Card>
-            {/* <Card className="rounded-2xl border-slate-200">
+          </CardContent>
+        </Card>
+        {/* <Card className="rounded-2xl border-slate-200">
             <CardHeader>
               <CardTitle className="text-slate-900">
                 Transações do Período
@@ -213,9 +218,7 @@ export default async function HomePage() {
               </div>
             </CardContent>
           </Card> */}
-            {/* <DataTable data={data} /> */}
-          </div>
-        </div>
+        {/* <DataTable data={data} /> */}
       </div>
     </div>
   );

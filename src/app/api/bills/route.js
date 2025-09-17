@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { createBillSchema } from "@/schemas/bills";
 import { revalidateTag } from "next/cache";
-import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -33,8 +32,6 @@ export async function POST(req) {
   const newBill = await prisma.recurringBills.create({
     data: query,
   });
-
-  console.log("New Bills: ", newBill);
 
   if (!newBill) {
     return NextResponse.json({

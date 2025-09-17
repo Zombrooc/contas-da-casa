@@ -16,7 +16,7 @@ export async function GET(req) {
   return NextResponse.json({
     success: true,
     data: {
-      transactions,
+      transactions: transactions || [],
     },
   });
 }
@@ -27,7 +27,6 @@ export const POST = async (req) => {
   const validatedFields = createTransactionSchema.safeParse(body);
 
   if (!validatedFields.success) {
-    console.log('Errors: ', validatedFields.error)
     return NextResponse.json({
       success: false,
       errors: {
@@ -40,16 +39,20 @@ export const POST = async (req) => {
     walletId: validatedFields.data.wallet,
     amount: validatedFields.data.amount,
     type: validatedFields.data.type,
-    category: validatedFields.data.category
-  }
+    category: validatedFields.data.category,
+  };
 
   if (validatedFields.data.description) {
-    newTransactionData.description = validatedFields.data.description
+    newTransactionData.description = validatedFields.data.description;
   }
 
   const newTransaction = await createTransaction({
-    ...newTransactionData
+    ...newTransactionData,
   });
+
+  revalidateTag("transactions");
+  revalidateTag("stats");
+  revalidateTag("balance");
 
   return NextResponse.json({
     success: true,

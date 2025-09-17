@@ -3,18 +3,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUrl } from "@/lib/getUrl";
 
 async function fetchData() {
-  const billsResponse = await fetch(getUrl('/api/bills'), { cache: 'no-store' });
+  const billsResponse = await fetch(getUrl("/api/bills"), {
+    next: {
+      tags: ["bills"],
+      revalidate: 60,
+    },
+  });
 
-  const { data } = await billsResponse.json()
+  const { data } = await billsResponse.json();
 
-  const { bills } = data
+  const { bills } = data;
 
-  return { bills: bills || [] }
+  return { bills: bills || [] };
 }
 
 export default async function CreateBillInstancePage() {
-
-
   const { bills } = await fetchData();
 
   return (
@@ -27,7 +30,11 @@ export default async function CreateBillInstancePage() {
                 <CardTitle className="text-foreground">Criar conta</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {bills.length > 0 ? <CreateNewBillInstanceForm bills={bills} /> : "Nenhuma conta criada"}
+                {bills.length > 0 ? (
+                  <CreateNewBillInstanceForm bills={bills} />
+                ) : (
+                  "Nenhuma conta criada"
+                )}
               </CardContent>
             </Card>
           </div>

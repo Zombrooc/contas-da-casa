@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 async function PUT(req, { params }) {
@@ -35,7 +36,6 @@ async function PUT(req, { params }) {
 
       const newBalance = balance - instance.amount;
 
-      console.log('Balance: ', newBalance)
       await tx.wallets.update({
         where: {
           id: walletId,
@@ -66,12 +66,14 @@ async function PUT(req, { params }) {
       });
     });
 
+    revalidateTag("stats");
+    revalidateTag("balance");
+
     return NextResponse.json({
       success: true,
     });
   } catch (err) {
-
-    console.error(err)
+    console.error(err);
     return NextResponse.json({
       success: false,
       errors: err.message,

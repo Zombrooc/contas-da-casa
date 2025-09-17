@@ -4,9 +4,7 @@ import { NextResponse } from "next/server";
 // import { prisma } from "@/lib/prisma";
 import { revalidateTag } from "next/cache";
 
-
 export const POST = async (req, { params }) => {
-
   const body = await req.json();
   const { walletId } = await params;
 
@@ -16,10 +14,10 @@ export const POST = async (req, { params }) => {
     return NextResponse.json({
       success: false,
       errors: {
-        ...validatedFields.error.flatten().fieldErrors
-      }
-    })
-  };
+        ...validatedFields.error.flatten().fieldErrors,
+      },
+    });
+  }
 
   const { amount, category } = validatedFields.data;
 
@@ -27,17 +25,17 @@ export const POST = async (req, { params }) => {
     walletId,
     category,
     amount: amount,
-    type: 'INCOME'
+    type: "INCOME",
   });
 
-  revalidateTag("wallets")
+  revalidateTag("wallets");
+  revalidateTag("balance");
+  revalidateTag("transactions");
 
   return NextResponse.json({
     success: true,
     data: {
       transaction: newTransaction.id,
-      // wallet: updatedWalletAmount
-    }
-
-  })
-}
+    },
+  });
+};

@@ -3,18 +3,21 @@ import { getUrl } from "@/lib/getUrl";
 
 async function fetchData() {
   const response = await fetch(`${getUrl("/api/wallets")}`, {
-    cache: 'no-store'
+    next: {
+      tags: ["wallets", "balance"],
+      revalidate: 60,
+    },
   });
 
   const { success, data } = await response.json();
 
   const { wallets } = data;
 
-  return { wallets };
+  return { success, wallets };
 }
 
 export default async function WalletPage() {
-  const { wallets } = await fetchData();
+  const { success, wallets } = await fetchData();
 
   if (!wallets) {
     return "Nenhuma carteira criada";

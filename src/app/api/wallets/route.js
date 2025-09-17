@@ -43,8 +43,6 @@ export const GET = async () => {
   try {
     const wallets = await prisma.wallets.findMany({});
 
-    console.log("Wallets: ", wallets);
-
     return NextResponse.json({
       success: true,
       data: { wallets: wallets || [] },
