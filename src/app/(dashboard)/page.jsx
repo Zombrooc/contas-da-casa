@@ -15,45 +15,26 @@ import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { format } from "date-fns";
 import { getUrl } from "@/lib/getUrl";
 import { CATEGORIES } from "@/lib/ENUMS";
-
-async function fetchData() {
-  const [statsResponse, transactionResponse] = await Promise.all([
-    fetch(`${getUrl(`/api/stats`)}`, {
-      next: {
-        tags: ["stats", "balance", "transactions"],
-        revalidate: 60,
-      },
-    }),
-    fetch(`${getUrl("/api/transactions")}`, {
-      next: {
-        tags: ["transactions", "balance", "stats"],
-        revalidate: 60,
-      },
-    }),
-  ]);
-
-  const { data: statsData } = await statsResponse.json();
-  const { data: transactionsData } = await transactionResponse.json();
-
-  const { balance, incomeBalance, expenseBalance } = statsData;
-  const { transactions } = transactionsData;
-
-  return {
-    stats: {
-      balance,
-      incomeBalance,
-      expenseBalance,
-    },
-    transactions,
-  };
-}
+import SectionCardsLoading from "@/components/loading/SectionCardsLoading";
+import { Suspense } from "react";
 
 export default async function HomePage() {
-  const { stats, transactions } = await fetchData();
+  const transactionResponse = await fetch(`${getUrl("/api/transactions")}`, {
+    next: {
+      tags: ["transactions", "balance", "stats"],
+      revalidate: 60,
+    },
+  });
+
+  const { data: transactionsData } = await transactionResponse.json();
+
+  const { transactions } = transactionsData;
 
   return (
     <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-      <SectionCards stats={stats} />
+      <Suspense fallback={<SectionCardsLoading />}>
+        <SectionCards />
+      </Suspense>
       <div className="px-4 lg:px-6">
         <ChartAreaInteractive />
       </div>
