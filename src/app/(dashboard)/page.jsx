@@ -70,10 +70,13 @@ export default async function HomePage() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
+                      <p className=" text-foreground">
+                        {transaction.description}
+                      </p>
                       <Badge variant="secondary" className="">
                         <>
                           {CATEGORIES.find(
-                            (category) => category.key === transaction.category,
+                            (category) => category.key === transaction.category
                           )?.value || "S/C"}
                         </>
                       </Badge>
@@ -82,7 +85,7 @@ export default async function HomePage() {
                       <span>{`${format(
                         new Date(transaction.createdAt),
                         "iiii '-' dd 'de' MMMM 'de' yyyy",
-                        { locale: ptBR },
+                        { locale: ptBR }
                       )}`}</span>
                       <span>•</span>
                       <span>{transaction.wallet.name}</span>
