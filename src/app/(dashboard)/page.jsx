@@ -17,6 +17,8 @@ import { getUrl } from "@/lib/getUrl";
 import { CATEGORIES } from "@/lib/ENUMS";
 import SectionCardsLoading from "@/components/loading/SectionCardsLoading";
 import { Suspense } from "react";
+import { DataTable } from "@/components/data-table";
+import { transactionsTableColumns } from "@/components/transactions/TransactionsTableColumns";
 
 export default async function HomePage() {
   const transactionResponse = await fetch(`${getUrl("/api/transactions")}`, {
@@ -38,6 +40,7 @@ export default async function HomePage() {
       <div className="px-4 lg:px-6">
         <ChartAreaInteractive />
       </div>
+      <DataTable data={transactions} columns={transactionsTableColumns} />
       <div className="px-4 lg:px-6">
         <Card className="rounded-xl">
           <CardHeader>
@@ -202,7 +205,6 @@ export default async function HomePage() {
               </div>
             </CardContent>
           </Card> */}
-        {/* <DataTable data={data} /> */}
       </div>
     </div>
   );
