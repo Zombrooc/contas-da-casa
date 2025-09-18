@@ -11,11 +11,19 @@ export async function GET(req) {
     },
   });
 
+  const now = new Date();
+  const referenceYear = now.getFullYear();
+  const referenceMonth = now.getMonth() + 1;
+
   const {
     _sum: { amount: incomeBalance },
   } = await prisma.transactions.aggregate({
     where: {
       type: "INCOME",
+      createdAt: {
+        gte: new Date(referenceYear, referenceMonth - 1, 1),
+        lte: new Date(referenceYear, referenceMonth, 0, 23, 59, 59),
+      },
     },
     _sum: {
       amount: true,
@@ -27,6 +35,10 @@ export async function GET(req) {
   } = await prisma.transactions.aggregate({
     where: {
       type: "EXPENSE",
+      createdAt: {
+        gte: new Date(referenceYear, referenceMonth - 1, 1),
+        lte: new Date(referenceYear, referenceMonth, 0, 23, 59, 59),
+      },
     },
     _sum: {
       amount: true,

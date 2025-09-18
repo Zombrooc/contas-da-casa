@@ -12,6 +12,7 @@ const createTransaction = async ({
   type,
   billId = null,
   description,
+  createdAt,
 }) => {
 
   let query = {
@@ -30,7 +31,13 @@ const createTransaction = async ({
     query.billId = billId;
   }
 
-  const newTransaction = await prisma.transactions.create({ data: query });
+  if (process.env.NODE_ENV === 'development') {
+    query.createdAt = createdAt
+  }
+
+  const newTransaction = await prisma.transactions.create({
+    data: query
+  });
 
   if (type === 'EXPENSE') {
 
