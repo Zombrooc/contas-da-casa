@@ -15,7 +15,6 @@ export async function GET() {
   const grouped = {};
 
   rawData.forEach((row) => {
-    console.log(row);
     const day = row.createdAt.toISOString().split("T")[0];
     if (!grouped[day]) {
       grouped[day] = { income: 0, expense: 0 };
@@ -27,13 +26,13 @@ export async function GET() {
     }
   });
 
-  console.log("Grouped: ", grouped);
   const aggregatedData = Object.entries(grouped).map(([date, values]) => ({
     date,
     income: values.income / 100,
     expense: values.expense / 100,
   }));
 
+  console.log("aggregatedData: ", aggregatedData);
   return NextResponse.json({
     success: true,
     data: {
