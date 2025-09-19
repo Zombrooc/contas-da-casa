@@ -6,7 +6,7 @@ async function fetchData() {
   const billsResponse = await fetch(getUrl("/api/bills"), {
     next: {
       tags: ["bills"],
-      revalidate: 60,
+      revalidate: 1200,
     },
   });
 

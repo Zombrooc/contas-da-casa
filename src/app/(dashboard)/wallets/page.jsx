@@ -5,7 +5,7 @@ async function fetchData() {
   const response = await fetch(`${getUrl("/api/wallets")}`, {
     next: {
       tags: ["wallets", "balance"],
-      revalidate: 60,
+      revalidate: 1200,
     },
   });
 

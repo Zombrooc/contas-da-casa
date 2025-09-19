@@ -11,13 +11,13 @@ async function fetchData() {
     fetch(`${getUrl("/api/bills")}`, {
       next: {
         tags: ["bills"],
-        revalidate: 60,
+        revalidate: 1200,
       },
     }),
     fetch(`${getUrl("/api/wallets")}`, {
       next: {
         tags: ["wallets", "balance"],
-        revalidate: 60,
+        revalidate: 1200,
       },
     }),
   ]);
