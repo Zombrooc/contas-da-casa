@@ -1,6 +1,7 @@
 import { createTransaction } from "@/lib/actions/transactions/createTransaction";
 import { CATEGORIES } from "@/lib/ENUMS";
 import { faker } from "@faker-js/faker";
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 const incomeCategories = Object.keys(CATEGORIES)
@@ -46,7 +47,7 @@ const getData = () => {
 export async function GET(req) {
   for (let i = 0; i <= 10000; i++) {
     const { walletId, category, type, amount, description, createdAt } =
-      await getData();
+      getData();
 
     const newTransaction = await createTransaction({
       walletId,
@@ -61,6 +62,10 @@ export async function GET(req) {
       `#${i} - R$ ${newTransaction.amount} | Type: ${newTransaction.type} | Category: ${newTransaction.category}`,
     );
   }
+
+  revalidateTag("wallet");
+  revalidateTag("transactions");
+  revalidateTag("stats");
 
   return NextResponse.json({
     success: true,

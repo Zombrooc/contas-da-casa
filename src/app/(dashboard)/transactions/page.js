@@ -5,23 +5,36 @@ async function fetchData() {
   const transactionResponse = await fetch(`${getUrl("/api/transactions")}`, {
     next: {
       tags: ["transactions", "balance"],
-      revalidate: 1200,
     },
   });
 
-  const { data } = await transactionResponse.json();
+  const statsResponse = await fetch(`${getUrl("/api/stats")}`, {
+    next: {
+      tags: ["transactions", "balance"],
+    },
+  });
 
-  const { transactions } = data;
+  const { data: statsData } = await statsResponse.json();
+  const { data: transactionsData, pagination } =
+    await transactionResponse.json();
 
-  return { transactions: transactions || [] };
+  const { transactions } = transactionsData;
+
+  return { transactions: transactions || [], pagination, stats: statsData };
 }
 
 export default async function TransactionsPage() {
-  const { transactions } = await fetchData();
+  const { transactions, pagination, stats } = await fetchData();
 
   if (!transactions) {
     return "Nenhuma transação efetuada";
   }
 
-  return <TransactionPageClient transactions={transactions} />;
+  return (
+    <TransactionPageClient
+      transactions={transactions}
+      pagination={pagination}
+      stats={stats}
+    />
+  );
 }

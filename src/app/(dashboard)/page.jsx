@@ -23,7 +23,6 @@ export default async function HomePage() {
   const transactionResponse = await fetch(`${getUrl("/api/transactions")}`, {
     next: {
       tags: ["transactions", "balance", "stats"],
-      revalidate: 1200,
     },
   });
 
