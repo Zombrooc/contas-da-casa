@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Card,
   CardAction,
@@ -40,55 +40,81 @@ export default function TransactionPageClient({
   pagination,
   stats,
 }) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
+  const searchParams = useSearchParams();
+
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("searchTerm") || "");
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get("categoryFilter") || "all");
+  const [typeFilter, setTypeFilter] = useState(searchParams.get("type") || "all");
   const [currentPage, setCurrentPage] = useState(pagination.currentPage);
   const [transactionList, setTransactionList] = useState(transactions);
   const [totalPages, setTotalPages] = useState(pagination.totalPages);
   const [hasNext, setHasNext] = useState(pagination.hasNext);
+  const [currentParams, setCurrentParams] = useState()
 
   // Filtrar transações
-  const filteredTransactions = useMemo(async () => {
-    const params = new URLSearchParams();
+  // const filteredTransactions = useMemo(async () => {
 
-    params.append("searchTerm", searchTerm || null);
-    params.append("categoryFilter", categoryFilter);
-    params.append("type", type);
+  useEffect(() => {
+    async function updateData() {
+      const params = new URLSearchParams();
 
-    const transactionResponse = await fetch(
-      `/api/transactions?${searchParams.toString()}`,
-    );
+      if (searchTerm) {
+        params.append("searchTerm", null);
+      }
 
-    const { pagination, data } = await transactionResponse.json();
+      if (categoryFilter && categoryFilter !== "all") {
+        params.append("categoryFilter", categoryFilter);
+      }
 
-    setTransactionList(data.transactions);
-    setCurrentPage(pagination.currentPage);
-    setHasNext(pagination.hasNext);
-    setTotalPages(pagination.totalPages);
-    // return transactionList.filter((transaction) => {
-    //   const matchesSearch =
-    //     !searchTerm.trim() || // ← Se vazio, passa por todas
-    //     transaction?.description
-    //       ?.toLowerCase()
-    //       .includes(searchTerm.toLowerCase()) ||
-    //     CATEGORIES.find((cat) => cat.key === transaction.category)
-    //       ?.value?.toLowerCase()
-    //       .includes(searchTerm.toLowerCase());
+      if (typeFilter && typeFilter !== "all") {
+        params.append("type", typeFilter);
+      }
 
-    // const matchesCategory =
-    //   categoryFilter === "all" ||
-    //   CATEGORIES.find((cat) => cat.key === transaction.category)?.value ===
-    //     categoryFilter;
-    // const matchesType =
-    //   typeFilter === "all" || transaction.type === typeFilter;
+      setCurrentParams(params)
 
-    // return matchesSearch && matchesCategory && matchesType;
-    // });
-  }, [transactionList, searchTerm, categoryFilter, typeFilter]);
+      const transactionResponse = await fetch(
+        `/api/transactions?${params.toString() || ""}`,
+      );
+
+      const { pagination, data } = await transactionResponse.json();
+
+      setTransactionList(data.transactions);
+      setCurrentPage(pagination.currentPage);
+      setHasNext(pagination.hasNext);
+      setTotalPages(pagination.totalPages);
+
+      window.history.replaceState(
+        null,
+        "",
+        `/transactions?${params.toString()}`
+      );
+      // return transactionList.filter((transaction) => {
+      //   const matchesSearch =
+      //     !searchTerm.trim() || // ← Se vazio, passa por todas
+      //     transaction?.description
+      //       ?.toLowerCase()
+      //       .includes(searchTerm.toLowerCase()) ||
+      //     CATEGORIES.find((cat) => cat.key === transaction.category)
+      //       ?.value?.toLowerCase()
+      //       .includes(searchTerm.toLowerCase());
+
+      // const matchesCategory =
+      //   categoryFilter === "all" ||
+      //   CATEGORIES.find((cat) => cat.key === transaction.category)?.value ===
+      //     categoryFilter;
+      // const matchesType =
+      //   typeFilter === "all" || transaction.type === typeFilter;
+
+      // return matchesSearch && matchesCategory && matchesType;
+      // });
+    }
+
+    updateData();
+  }, [searchTerm, categoryFilter, typeFilter]);
 
   async function getPage(page) {
-    const transactionResponse = await fetch(`/api/transactions?page=${page}`);
+
+    const transactionResponse = await fetch(`/api/transactions?page=${page}&${currentParams.toString() || ""}`);
 
     const { pagination, data } = await transactionResponse.json();
 
@@ -276,9 +302,8 @@ export default function TransactionPageClient({
                     <SelectValue placeholder="Todas as categorias" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas as categorias</SelectItem>
                     {CATEGORIES.map((category) => (
-                      <SelectItem key={category.key} value={category.value}>
+                      <SelectItem key={category.key} value={category.key}>
                         {category.value}
                       </SelectItem>
                     ))}
@@ -293,7 +318,6 @@ export default function TransactionPageClient({
                     <SelectValue placeholder="Todos os tipos" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos os tipos</SelectItem>
                     <SelectItem value="INCOME">Receitas</SelectItem>
                     <SelectItem value="EXPENSE">Despesas</SelectItem>
                   </SelectContent>
@@ -321,22 +345,21 @@ export default function TransactionPageClient({
               Lista de Transações
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Exibindo {filteredTransactions.length} transações
+              Exibindo {transactionList.length} transações
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {filteredTransactions.map((transaction) => (
+            {transactionList.map((transaction) => (
               <div
                 key={transaction.id}
                 className="flex items-center justify-between p-4 rounded-lg  hover:cursor-pointer group"
               >
                 <div className="flex items-center gap-4">
                   <div
-                    className={`p-3 rounded-lg ${
-                      transaction.type === "INCOME"
-                        ? "bg-green-500/10"
-                        : "bg-red-500/10"
-                    }`}
+                    className={`p-3 rounded-lg ${transaction.type === "INCOME"
+                      ? "bg-green-500/10"
+                      : "bg-red-500/10"
+                      }`}
                   >
                     {transaction.type === "INCOME" ? (
                       <ArrowUpRight className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -366,11 +389,10 @@ export default function TransactionPageClient({
                 </div>
                 <div className="text-right">
                   <div
-                    className={` ${
-                      transaction.type === "INCOME"
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-red-600 dark:text-red-400"
-                    }`}
+                    className={` ${transaction.type === "INCOME"
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-red-600 dark:text-red-400"
+                      }`}
                   >
                     {transaction.type === "INCOME" ? "+" : "-"}
                     {new Intl.NumberFormat("pt-BR", {

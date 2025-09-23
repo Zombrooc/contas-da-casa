@@ -16,7 +16,6 @@ export async function GET(req) {
     to,
     referenceMonth,
     referenceYear,
-    categoryIds,
     type,
     minAmount,
     maxAmount,
@@ -39,7 +38,7 @@ export async function GET(req) {
   const where = {};
 
   if (hasRange) {
-    where.date = {
+    where.createdAt = {
       ...(from ? { gte: new Date(from) } : {}),
       ...(to ? { lte: new Date(to) } : {}),
     };
@@ -55,6 +54,10 @@ export async function GET(req) {
     };
   }
 
+  if (categoryFilter) {
+    where.category = categoryFilter;
+  }
+
   if (!hasReference && !hasRange) {
     const now = new Date();
     const referenceYear = now.getFullYear();
@@ -66,10 +69,6 @@ export async function GET(req) {
       gte: start,
       lte: end,
     };
-  }
-
-  if (categoryIds?.length) {
-    where.categoryId = { in: categoryIds };
   }
 
   if (type) {
@@ -101,12 +100,12 @@ export async function GET(req) {
         createdAt: "desc",
       },
       take: Number(items),
-      skip: Number(items) * Number(page),
+      skip: Number(items) * (Number(page) - 1),
     }),
   ]);
 
-  const totalPages = Math.floor(numberOfTransactions / items);
-  const hasNext = Number(page) + 1 <= totalPages;
+  const totalPages = Math.ceil(numberOfTransactions / items);
+  const hasNext = Number(page) < totalPages;
 
   return NextResponse.json({
     success: true,
@@ -114,7 +113,7 @@ export async function GET(req) {
       transactions: transactions || [],
     },
     pagination: {
-      nextPage: hasNext ? Number(page) + Number(1) : null,
+      nextPage: hasNext ? Number(page) + 1 : null,
       currentPage: Number(page),
       hasNext,
       totalPages,
