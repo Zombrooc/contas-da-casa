@@ -142,8 +142,6 @@ const columns = [
     accessorKey: "walletName",
     header: "Carteira",
     cell: ({ row }) => {
-      console.log(row);
-
       return (
         <div className="w-32">
           <TableCellViewer item={row.original.wallet.name} />;

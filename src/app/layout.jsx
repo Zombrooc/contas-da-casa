@@ -5,6 +5,7 @@ import "./globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { auth } from "@/lib/auth";
 
 export const metadata = {
   title: "Contas da Casa",
@@ -13,6 +14,7 @@ export const metadata = {
 };
 
 import { Bitter, IBM_Plex_Mono, Inter } from "next/font/google";
+import { headers } from "next/headers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -33,7 +35,13 @@ const ibmPlex = IBM_Plex_Mono({
   weight: ["100", "200", "300"],
 });
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  console.log("Session in layout:", session?.user);
+
   return (
     <html lang="pt-BR">
       <body
@@ -45,7 +53,7 @@ export default function RootLayout({ children }) {
             "--header-height": "calc(var(--spacing) * 12)",
           }}
         >
-          <AppSidebar variant="inset" />
+          <AppSidebar variant="inset" session={session || null} />
           <SidebarInset>
             <SiteHeader />
             <div className="flex flex-1 flex-col ">

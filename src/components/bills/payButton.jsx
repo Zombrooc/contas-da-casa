@@ -45,7 +45,6 @@ function PayInstanceButton({ instanceId, billName, wallets, children }) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     //
-    console.log("Data: ", data);
     const res = await fetch(`/api/bill-instances/${instanceId}/pay`, {
       method: "PUT",
       body: JSON.stringify(data),

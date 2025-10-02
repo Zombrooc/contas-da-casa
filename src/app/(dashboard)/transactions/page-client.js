@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Card,
   CardAction,
@@ -34,62 +34,97 @@ import {
 
 import { CATEGORIES } from "@/lib/ENUMS";
 import { format } from "date-fns";
+// import { useSearchParams } from "next/navigation";
 
-export default function TransactionPageClient({ transactions }) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+export default function TransactionPageClient({
+  transactions,
+  pagination,
+  stats,
+  currentFilter
+}) {
+  // const searchParams = useSearchParams();
+
+  const [searchTerm, setSearchTerm] = useState(currentFilter?.searchTerm);
+  const [categoryFilter, setCategoryFilter] = useState(currentFilter?.categoryFilter);
+  const [typeFilter, setTypeFilter] = useState(currentFilter?.type);
+  const [currentPage, setCurrentPage] = useState(pagination.currentPage);
+  const [transactionList, setTransactionList] = useState(transactions);
+  const [totalPages, setTotalPages] = useState(pagination.totalPages);
+  const [hasNext, setHasNext] = useState(pagination.hasNext);
+  const [currentParams, setCurrentParams] = useState()
 
   // Filtrar transações
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((transaction) => {
-      const matchesSearch =
-        !searchTerm.trim() || // ← Se vazio, passa por todas
-        transaction?.description
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        CATEGORIES.find((cat) => cat.key === transaction.category)
-          ?.value?.toLowerCase()
-          .includes(searchTerm.toLowerCase());
+  // const filteredTransactions = useMemo(async () => {
 
-      console.log("Matches Search: ", matchesSearch);
-      const matchesCategory =
-        categoryFilter === "all" ||
-        CATEGORIES.find((cat) => cat.key === transaction.category)?.value ===
-        categoryFilter;
-      const matchesType =
-        typeFilter === "all" || transaction.type === typeFilter;
+  useEffect(() => {
+    async function updateData() {
+      const params = new URLSearchParams();
 
-      return matchesSearch && matchesCategory && matchesType;
-    });
+      if (searchTerm) {
+        params.append("searchTerm", searchTerm);
+      }
+
+      if (categoryFilter && categoryFilter !== "all") {
+        params.append("categoryFilter", categoryFilter);
+      }
+
+      if (typeFilter && typeFilter !== "all") {
+        params.append("type", typeFilter);
+      }
+
+      setCurrentParams(params)
+
+      const transactionResponse = await fetch(
+        `/api/transactions?${params.toString() || ""}`,
+      );
+
+      const { pagination, data } = await transactionResponse.json();
+
+      setTransactionList(data.transactions);
+      setCurrentPage(pagination.currentPage);
+      setHasNext(pagination.hasNext);
+      setTotalPages(pagination.totalPages);
+
+      window.history.replaceState(
+        null,
+        "",
+        `/transactions?${params.toString()}`
+      );
+
+    }
+
+    updateData();
   }, [searchTerm, categoryFilter, typeFilter]);
 
-  // Paginação
-  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
-  const paginatedTransactions = filteredTransactions.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  async function getPage(page) {
+
+    const transactionResponse = await fetch(`/api/transactions?page=${page}&${currentParams.toString() || ""}`);
+
+    const { pagination, data } = await transactionResponse.json();
+
+    setTransactionList(data.transactions);
+    setCurrentPage(pagination.currentPage);
+    setHasNext(pagination.hasNext);
+    setTotalPages(pagination.totalPages);
+  }
 
   // Estatísticas das transações filtradas
-  const stats = useMemo(() => {
-    const totalIncome = filteredTransactions
-      .filter((t) => t.type === "INCOME")
-      .reduce((sum, t) => sum + t.amount, 0);
+  // const stats = useMemo(() => {
+  //   const totalIncome = filteredTransactions
+  //     .filter((t) => t.type === "INCOME")
+  //     .reduce((sum, t) => sum + t.amount, 0);
 
-    const totalExpenses = filteredTransactions
-      .filter((t) => t.type === "EXPENSE")
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  //   const totalExpenses = filteredTransactions
+  //     .filter((t) => t.type === "EXPENSE")
+  //     .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
-    return {
-      totalIncome,
-      totalExpenses,
-      balance: totalIncome - totalExpenses,
-      count: filteredTransactions.length,
-    };
-  }, [filteredTransactions]);
+  //   return {
+  //     totalIncome,
+  //     totalExpenses,
+  //     balance: totalIncome - totalExpenses,
+  //     count: filteredTransactions.length,
+  //   };
+  // }, [filteredTransactions]);
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-muted/30">
@@ -102,7 +137,10 @@ export default function TransactionPageClient({ transactions }) {
                 Total de Transações
               </CardDescription>
               <CardTitle className="tabular-nums">
-                <p className="text-2xl font-semibold"> {stats.count} </p>
+                <p className="text-2xl font-semibold">
+                  {" "}
+                  {stats.transactionsCount}{" "}
+                </p>
                 <p className="text-sm text-muted-foreground">transações</p>
               </CardTitle>
               <CardAction>
@@ -127,7 +165,7 @@ export default function TransactionPageClient({ transactions }) {
                   {new Intl.NumberFormat("pt-BR", {
                     style: "currency",
                     currency: "BRL",
-                  }).format(stats.totalIncome / 100)}
+                  }).format(stats.incomeBalance / 100)}
                 </p>
                 <p className="text-sm  text-green-600 dark:text-green-400">
                   entradas
@@ -154,7 +192,7 @@ export default function TransactionPageClient({ transactions }) {
                   {new Intl.NumberFormat("pt-BR", {
                     style: "currency",
                     currency: "BRL",
-                  }).format(stats.totalExpenses / 100)}
+                  }).format(stats.expenseBalance / 100)}
                 </p>
                 <p className="text-sm  text-red-600 dark:text-red-400">
                   saídas
@@ -183,7 +221,7 @@ export default function TransactionPageClient({ transactions }) {
                   {new Intl.NumberFormat("pt-BR", {
                     style: "currency",
                     currency: "BRL",
-                  }).format(stats.balance / 100)}
+                  }).format((stats.incomeBalance - stats.expenseBalance) / 100)}
                 </p>
                 <p className="text-sm text-muted-foreground">diferença</p>
               </CardTitle>
@@ -220,13 +258,6 @@ export default function TransactionPageClient({ transactions }) {
                   <Download className="h-4 w-4 mr-2" />
                   Exportar
                 </Button>
-                <Button
-                  size="sm"
-                  className="bg-primary hover:bg-primary/90 rounded-lg"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Transação
-                </Button>
               </div>
             </div>
           </CardHeader>
@@ -255,9 +286,9 @@ export default function TransactionPageClient({ transactions }) {
                     <SelectValue placeholder="Todas as categorias" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas as categorias</SelectItem>
+                    <SelectItem value="all">Todas as Categorias</SelectItem>
                     {CATEGORIES.map((category) => (
-                      <SelectItem key={category.key} value={category.value}>
+                      <SelectItem key={category.key} value={category.key}>
                         {category.value}
                       </SelectItem>
                     ))}
@@ -300,11 +331,11 @@ export default function TransactionPageClient({ transactions }) {
               Lista de Transações
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              {filteredTransactions.length} transações encontradas
+              Exibindo {transactionList.length} transações
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {paginatedTransactions.map((transaction) => (
+            {transactionList.map((transaction) => (
               <div
                 key={transaction.id}
                 className="flex items-center justify-between p-4 rounded-lg  hover:cursor-pointer group"
@@ -335,7 +366,7 @@ export default function TransactionPageClient({ transactions }) {
                     </div>
                     <div className="flex items-center gap-4  text-muted-foreground">
                       <span>
-                        {format(new Date(transaction.createdAt), "dd/MM/yyyy")}
+                        {transaction.createdAt}
                       </span>
                       <span>•</span>
                       <span>{transaction.wallet.name}</span>
@@ -349,7 +380,7 @@ export default function TransactionPageClient({ transactions }) {
                       : "text-red-600 dark:text-red-400"
                       }`}
                   >
-                    {transaction.type === "INCOME" ? "+" : ""}
+                    {transaction.type === "INCOME" ? "+" : "-"}
                     {new Intl.NumberFormat("pt-BR", {
                       style: "currency",
                       currency: "BRL",
@@ -363,7 +394,7 @@ export default function TransactionPageClient({ transactions }) {
             ))}
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {pagination.totalPages > 1 && (
               <div className="flex items-center justify-between pt-4 border-t ">
                 <p className=" text-muted-foreground">
                   Página {currentPage} de {totalPages}
@@ -372,7 +403,7 @@ export default function TransactionPageClient({ transactions }) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    onClick={() => getPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
                     className=" rounded-lg"
                   >
@@ -382,9 +413,9 @@ export default function TransactionPageClient({ transactions }) {
                     variant="outline"
                     size="sm"
                     onClick={() =>
-                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                      getPage(Math.min(totalPages, currentPage + 1))
                     }
-                    disabled={currentPage === totalPages}
+                    disabled={!hasNext}
                     className=" rounded-lg"
                   >
                     <ChevronRight className="h-4 w-4" />

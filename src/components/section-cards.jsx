@@ -8,7 +8,7 @@ import { getUrl } from "@/lib/getUrl";
 
 export async function SectionCards() {
   const statsResponse = await fetch(getUrl(`/api/stats`), {
-    next: { tags: ["stats", "balance", "transactions"], revalidate: 1200 },
+    next: { tags: ["stats", "balance", "transactions"] },
   });
 
   const { data } = await statsResponse.json();

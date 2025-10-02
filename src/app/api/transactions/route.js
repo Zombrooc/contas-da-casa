@@ -1,53 +1,63 @@
 import { createTransaction } from "@/lib/actions/transactions/createTransaction";
 import { prisma } from "@/lib/prisma";
 import { createTransactionSchema } from "@/schemas/transactions";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
+  const searchParams = req.nextUrl.searchParams;
 
-  const searchParams = req.nextUrl.searchParams
-
-  const filter = Object.fromEntries(searchParams)
+  const filter = Object.fromEntries(searchParams);
 
   const {
+    page = 1,
+    items = 15,
     from,
     to,
     referenceMonth,
     referenceYear,
-    categoryIds,
     type,
     minAmount,
     maxAmount,
-  } = filter
+    searchTerm,
+    categoryFilter,
+  } = filter;
 
-  const hasRange = from || to
-  const hasReference = referenceMonth && referenceYear
+  const hasRange = from || to;
+  const hasReference = referenceMonth && referenceYear;
 
   if (hasRange && hasReference) {
     return NextResponse.json({
       success: false,
-      error: ["Use apenas intervalo (from/to) OU mês/ano de referência, nunca ambos."]
-    })
+      error: [
+        "Use apenas intervalo (from/to) OU mês/ano de referência, nunca ambos.",
+      ],
+    });
   }
 
-  const where = {}
+  const where = {};
 
   if (hasRange) {
-    where.date = {
+    where.createdAt = {
       ...(from ? { gte: new Date(from) } : {}),
       ...(to ? { lte: new Date(to) } : {}),
-    }
+    };
   }
 
   if (hasReference) {
-    const start = new Date(referenceYear, referenceMonth - 1, 1)
-    const end = new Date(referenceYear, referenceMonth, 0, 23, 59, 59)
+    const start = new Date(referenceYear, referenceMonth - 1, 1);
+    const end = new Date(referenceYear, referenceMonth, 0, 23, 59, 59);
 
     where.createdAt = {
       gte: start,
       lte: end,
-    }
+    };
+  }
+
+  if (categoryFilter && categoryFilter !== "all") {
+    where.category = categoryFilter;
   }
 
   if (!hasReference && !hasRange) {
@@ -57,42 +67,65 @@ export async function GET(req) {
     const start = new Date(referenceYear, referenceMonth - 1, 1);
     const end = new Date(referenceYear, referenceMonth, 0, 23, 59, 59);
 
-    console.log('Chegou aqui sem range e sem referencia', referenceMonth, referenceYear)
     where.createdAt = {
       gte: start,
       lte: end,
-    }
+    };
   }
 
-  if (categoryIds?.length) {
-    where.categoryId = { in: categoryIds }
-  }
-
-  if (type) {
-    where.type = type
+  if (type && type !== "all") {
+    where.type = type;
   }
 
   if (minAmount || maxAmount) {
     where.amount = {
       ...(minAmount ? { gte: minAmount } : {}),
       ...(maxAmount ? { lte: maxAmount } : {}),
-    }
+    };
   }
 
-  const transactions = await prisma.transactions.findMany({
-    where,
-    include: {
-      wallet: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const [numberOfTransactions, transactions] = await prisma.$transaction([
+    prisma.transactions.count({
+      where,
+    }),
+    prisma.transactions.findMany({
+      where,
+      include: {
+        wallet: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: Number(items),
+      skip: Number(items) * (Number(page) - 1),
+    }),
+  ]);
+
+  const totalPages = Math.ceil(numberOfTransactions / items);
+  const hasNext = Number(page) < totalPages;
+
+
 
   return NextResponse.json({
     success: true,
     data: {
-      transactions: transactions || [],
+      transactions: transactions.map(t => {
+        return {
+          ...t,
+          createdAt: format(new Date(t.createdAt), "dd/MM/yyyy", { locale: ptBR }),
+        }
+      }) || [],
+    },
+    pagination: {
+      nextPage: hasNext ? Number(page) + 1 : null,
+      currentPage: Number(page),
+      hasNext,
+      totalPages,
     },
   });
 }
