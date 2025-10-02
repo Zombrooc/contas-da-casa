@@ -35,9 +35,7 @@ export default async function HomePage() {
       <Suspense fallback={<SectionCardsLoading />}>
         <SectionCards />
       </Suspense>
-      <div className="px-4 lg:px-6">
-        <ChartAreaInteractive />
-      </div>
+      <div className="px-4 lg:px-6">{/* <ChartAreaInteractive /> */}</div>
       {/*<DataTable data={transactions} />*/}
       <div className="px-4 lg:px-6">
         <Card className="rounded-xl">
@@ -77,7 +75,7 @@ export default async function HomePage() {
                       <Badge variant="secondary" className="">
                         <>
                           {CATEGORIES.find(
-                            (category) => category.key === transaction.category,
+                            (category) => category.key === transaction.category
                           )?.value || "S/C"}
                         </>
                       </Badge>
@@ -86,7 +84,7 @@ export default async function HomePage() {
                       <span>{`${format(
                         new Date(transaction.createdAt),
                         "iiii '-' dd 'de' MMMM 'de' yyyy",
-                        { locale: ptBR },
+                        { locale: ptBR }
                       )}`}</span>
                       <span>•</span>
                       <span>{transaction.wallet.name}</span>

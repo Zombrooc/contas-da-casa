@@ -14,8 +14,7 @@ const expenseCategories = Object.keys(CATEGORIES)
 
 const getData = () => {
   const walletId = faker.helpers.arrayElement([
-    "cmforkodd0000k5f0v2ut69dx",
-    "cmforl4qv0002k5f02uiob3qh",
+    "cmg8ehqsw00005kq0imc2jk4k",
   ]);
 
   const type = faker.helpers.arrayElement(["INCOME", "INCOME", "EXPENSE"]);
@@ -27,7 +26,7 @@ const getData = () => {
 
   const description = faker.finance.transactionDescription();
 
-  const amount = faker.finance.amount();
+  const amount = faker.finance.amount({ max: 3500 });
 
   const createdAt = faker.date.between({
     from: new Date("2023-01-01"),
@@ -45,22 +44,21 @@ const getData = () => {
 };
 
 export async function GET(req) {
-  for (let i = 0; i <= 10000; i++) {
-    const { walletId, category, type, amount, description, createdAt } =
-      getData();
-
-    const newTransaction = await createTransaction({
-      walletId,
-      category,
-      type,
-      amount,
-      description,
-      createdAt,
-    });
-
-    console.log(
-      `#${i} - R$ ${newTransaction.amount} | Type: ${newTransaction.type} | Category: ${newTransaction.category}`,
-    );
+  const total = 100000; // Ajuste para evitar sobrecarga do servidor
+  const batchSize = 1000;
+  for (let i = 0; i < total; i += batchSize) {
+    const batch = [];
+    for (let j = 0; j < batchSize && i + j < total; j++) {
+      const data = getData();
+      batch.push(
+        createTransaction(data).then((newTransaction) => {
+          console.log(
+            `#${i + j} - R$ ${newTransaction.amount} | Type: ${newTransaction.type} | Category: ${newTransaction.category}`,
+          );
+        })
+      );
+    }
+    await Promise.all(batch);
   }
 
   revalidateTag("wallet");

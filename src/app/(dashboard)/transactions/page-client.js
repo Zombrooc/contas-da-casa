@@ -34,17 +34,19 @@ import {
 
 import { CATEGORIES } from "@/lib/ENUMS";
 import { format } from "date-fns";
+// import { useSearchParams } from "next/navigation";
 
 export default function TransactionPageClient({
   transactions,
   pagination,
   stats,
+  currentFilter
 }) {
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
 
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("searchTerm") || "");
-  const [categoryFilter, setCategoryFilter] = useState(searchParams.get("categoryFilter") || "all");
-  const [typeFilter, setTypeFilter] = useState(searchParams.get("type") || "all");
+  const [searchTerm, setSearchTerm] = useState(currentFilter?.searchTerm);
+  const [categoryFilter, setCategoryFilter] = useState(currentFilter?.categoryFilter);
+  const [typeFilter, setTypeFilter] = useState(currentFilter?.type);
   const [currentPage, setCurrentPage] = useState(pagination.currentPage);
   const [transactionList, setTransactionList] = useState(transactions);
   const [totalPages, setTotalPages] = useState(pagination.totalPages);
@@ -59,7 +61,7 @@ export default function TransactionPageClient({
       const params = new URLSearchParams();
 
       if (searchTerm) {
-        params.append("searchTerm", null);
+        params.append("searchTerm", searchTerm);
       }
 
       if (categoryFilter && categoryFilter !== "all") {
@@ -88,25 +90,7 @@ export default function TransactionPageClient({
         "",
         `/transactions?${params.toString()}`
       );
-      // return transactionList.filter((transaction) => {
-      //   const matchesSearch =
-      //     !searchTerm.trim() || // ← Se vazio, passa por todas
-      //     transaction?.description
-      //       ?.toLowerCase()
-      //       .includes(searchTerm.toLowerCase()) ||
-      //     CATEGORIES.find((cat) => cat.key === transaction.category)
-      //       ?.value?.toLowerCase()
-      //       .includes(searchTerm.toLowerCase());
 
-      // const matchesCategory =
-      //   categoryFilter === "all" ||
-      //   CATEGORIES.find((cat) => cat.key === transaction.category)?.value ===
-      //     categoryFilter;
-      // const matchesType =
-      //   typeFilter === "all" || transaction.type === typeFilter;
-
-      // return matchesSearch && matchesCategory && matchesType;
-      // });
     }
 
     updateData();
@@ -302,6 +286,7 @@ export default function TransactionPageClient({
                     <SelectValue placeholder="Todas as categorias" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">Todas as Categorias</SelectItem>
                     {CATEGORIES.map((category) => (
                       <SelectItem key={category.key} value={category.key}>
                         {category.value}
@@ -318,6 +303,7 @@ export default function TransactionPageClient({
                     <SelectValue placeholder="Todos os tipos" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">Todos os tipos</SelectItem>
                     <SelectItem value="INCOME">Receitas</SelectItem>
                     <SelectItem value="EXPENSE">Despesas</SelectItem>
                   </SelectContent>
@@ -380,7 +366,7 @@ export default function TransactionPageClient({
                     </div>
                     <div className="flex items-center gap-4  text-muted-foreground">
                       <span>
-                        {format(new Date(transaction.createdAt), "dd/MM/yyyy")}
+                        {transaction.createdAt}
                       </span>
                       <span>•</span>
                       <span>{transaction.wallet.name}</span>

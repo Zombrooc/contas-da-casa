@@ -1,6 +1,8 @@
 import { createTransaction } from "@/lib/actions/transactions/createTransaction";
 import { prisma } from "@/lib/prisma";
 import { createTransactionSchema } from "@/schemas/transactions";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
@@ -54,7 +56,7 @@ export async function GET(req) {
     };
   }
 
-  if (categoryFilter) {
+  if (categoryFilter && categoryFilter !== "all") {
     where.category = categoryFilter;
   }
 
@@ -71,7 +73,7 @@ export async function GET(req) {
     };
   }
 
-  if (type) {
+  if (type && type !== "all") {
     where.type = type;
   }
 
@@ -107,10 +109,17 @@ export async function GET(req) {
   const totalPages = Math.ceil(numberOfTransactions / items);
   const hasNext = Number(page) < totalPages;
 
+
+
   return NextResponse.json({
     success: true,
     data: {
-      transactions: transactions || [],
+      transactions: transactions.map(t => {
+        return {
+          ...t,
+          createdAt: format(new Date(t.createdAt), "dd/MM/yyyy", { locale: ptBR }),
+        }
+      }) || [],
     },
     pagination: {
       nextPage: hasNext ? Number(page) + 1 : null,
