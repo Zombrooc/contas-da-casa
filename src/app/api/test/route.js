@@ -14,7 +14,7 @@ const expenseCategories = Object.keys(CATEGORIES)
 
 const getData = () => {
   const walletId = faker.helpers.arrayElement([
-    "cmg8ehqsw00005kq0imc2jk4k",
+    "cmg9ko4ll0000tat0msq6horl",
   ]);
 
   const type = faker.helpers.arrayElement(["INCOME", "INCOME", "EXPENSE"]);
